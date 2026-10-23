@@ -29,5 +29,11 @@ page = f"""<title>CatchAll Demo</title>
 """
 os.makedirs(os.path.join(R, "dist"), exist_ok=True)
 open(os.path.join(R, "dist/index.html"), "w", encoding="utf-8").write(page)
-open(os.path.join(R, "dist/local.html"), "w", encoding="utf-8").write('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"></head><body>\n' + page + "</body></html>\n")
+full = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="robots" content="noindex, nofollow"></head><body>\n' + page + "</body></html>\n"
+open(os.path.join(R, "dist/local.html"), "w", encoding="utf-8").write(full)
+# GitHub Pages serves docs/ from main
+os.makedirs(os.path.join(R, "docs"), exist_ok=True)
+open(os.path.join(R, "docs/index.html"), "w", encoding="utf-8").write(full)
+open(os.path.join(R, "docs/.nojekyll"), "w").write("")
+open(os.path.join(R, "robots.txt"), "w").write("User-agent: *\nDisallow: /\n")
 print("built dist/index.html", len(page), "bytes;", len(js_files), "js files")
