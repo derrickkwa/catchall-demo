@@ -73,3 +73,6 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   .side .foot{display:none}
   .topbar .search{display:none}
 }
+/* avatar initials stay readable on light avatar colours in dark mode */
+:root[data-theme="dark"] .av2{color:#14150F}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .av2{color:#14150F}}

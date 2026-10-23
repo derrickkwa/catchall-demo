@@ -84,7 +84,7 @@ CA.data = {
     { id: "d13", date: "Oct 7",  acct: "peak",  who: "sam",   type: "budget",   what: "Spend shift", detail: "to Prospecting", camp: "Prospecting", source: "manual", status: "cant", pred: "CPA ↓ in 7d", conf: 6, tier: "unconnected", reason: "Testing broader targeting" },
     { id: "d14", date: "Oct 3",  acct: "acme",  who: null,    type: "audience", what: "Audience edit", detail: "excluded past purchasers", camp: "Retargeting", source: "outside", status: "outside" },
     { id: "d15", date: "Sep 30", acct: "bloom", who: "sam",   type: "creative", what: "New ad", detail: "\"Morning ritual\" UGC hook", camp: "Prospecting – Broad", source: "manual", status: "hit", tier: "late", pred: "CPA ↓ in 14d", conf: 7, move: "−9%", band: "±5%", thumb: 5 },
-    { id: "d16", date: "Sep 26", acct: "kettle",who: "alex",  type: "pause",    what: "Paused 2 ads", detail: "", camp: "Search", source: "history", status: "reason", tier: "recalled", reason: "Spend with no sales for 9 days" },
+    { id: "d16", date: "Sep 26", acct: "kettle",who: "alex",  type: "pause",    what: "Paused 2 ads", detail: "", camp: "Search", source: "history", status: "none", tier: "recalled", reason: "Spend with no sales for 9 days" },
   ],
 
   reasons: ["CPA too high", "Fatigue", "Scaling a winner", "Testing", "Budget pacing", "Client asked", "Seasonality", "Tracking issue"],

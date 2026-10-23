@@ -36,7 +36,7 @@
       const dot = a.status === "warn" ? `<span class="sdot w" title="${U.esc(a.note)}"></span>` : a.status === "none" ? `<span class="sdot n" title="${U.esc(a.note)}"></span>` : "";
       return `<button class="navlink${on ? " on" : ""}" data-go="acct-${a.id}-performance"><span><span class="adot" style="background:${a.color}"></span>${U.esc(a.name)}</span>${dot}</button>`;
     };
-    const needs = state.phase === "day1" ? 214 : D.me.needsReason;
+    const needs = state.phase === "day1" ? ((D.home && D.home.history) ? D.home.history.filter((h) => h.status === "reason").length : 214) : D.me.needsReason;
     return `<nav class="side" aria-label="Main">
       <div class="lbl">Your work</div>
       ${item("home", "Home")}${item("log", "Decision log", `<span class="n">${needs}</span>`)}${item("calls", "My calls")}${item("board", "Leaderboard")}
@@ -49,6 +49,7 @@
     </nav>`;
   }
   function topbar() {
+    const unread = D.notifications.filter((n) => !n.read).length;
     const me = state.role === "owner" ? D.people.dana : D.people.sam;
     return `<header class="topbar">
       <button class="wm linkbtn" data-go="home" aria-label="CatchAll home">CatchAll<i>.</i></button>
@@ -56,7 +57,7 @@
       <label class="search"><span class="sr">Search</span><input type="search" id="q" placeholder="Search accounts, decisions, codes"></label>
       <span class="sp"></span>
       <button class="btn btn-primary" data-drawer="log">+ Log a decision</button>
-      <button class="bell" data-drawer="notifications" aria-label="Notifications, ${D.notifications.length} new">${U.icon("bell")}<b>${D.notifications.length}</b></button>
+      <button class="bell" data-drawer="notifications" aria-label="Notifications, ${unread} new">${U.icon("bell")}${unread ? `<b>${unread}</b>` : ""}</button>
       <button class="av" data-go="profile" aria-label="Your profile">${U.esc(me.initials)}</button>
     </header>`;
   }
@@ -72,13 +73,22 @@
     ["Workspace", [["team", "Team"], ["prefs", "Settings"], ["profile", "Profile"]]],
     ["Outside the app", [["onboard", "Sign-up and onboarding"], ["client", "Client view"], ["public-board", "Public leaderboard"], ["record", "Shared track record"], ["shared-audit", "Shared audit"]]],
   ];
+  function jumpMatch() {
+    const all = screens.flatMap(([, list]) => list.map(([t]) => t));
+    if (all.includes(state.token)) return state.token;
+    const pre = all.filter((t) => state.token.startsWith(t)).sort((a, b) => b.length - a.length)[0];
+    if (pre) return pre;
+    const acctTab = state.token.match(/^acct-\w+-(\w+)/);
+    if (acctTab) return all.find((t) => t === "acct-acme-" + acctTab[1]) || "acct-acme-performance";
+    return all.find((t) => state.token.startsWith(t.split("-")[0])) || "home";
+  }
   function demobar() {
     const seg = (key, opts) => `<span class="dseg" role="group">${opts.map(([v, l]) => `<button class="${state[key] === v ? "on" : ""}" data-set="${key}:${v}" aria-pressed="${state[key] === v}">${l}</button>`).join("")}</span>`;
     return `<div class="demobar" role="region" aria-label="Demo controls">
       <span class="dlabel"><b>CatchAll</b> product demo · sample data</span>
       <span class="dgroup"><span class="dk">View as</span>${seg("role", [["buyer", "Buyer"], ["owner", "Owner"], ["client", "Client"]])}</span>
       <span class="dgroup"><span class="dk">Moment</span>${seg("phase", [["month", "A month in"], ["day1", "Day one"]])}</span>
-      <span class="dgroup"><label class="dk" for="jump">Screen</label><select id="jump">${screens.map(([g, list]) => `<optgroup label="${g}">${list.map(([t, l]) => `<option value="${t}"${state.token === t ? " selected" : ""}>${l}</option>`).join("")}</optgroup>`).join("")}</select></span>
+      <span class="dgroup"><label class="dk" for="jump">Screen</label><select id="jump">${screens.map(([g, list]) => `<optgroup label="${g}">${list.map(([t, l]) => `<option value="${t}"${jumpMatch() === t ? " selected" : ""}>${l}</option>`).join("")}</optgroup>`).join("")}</select></span>
       <button class="dbtn" data-theme-toggle aria-label="Switch light or dark">Light / dark</button>
     </div>`;
   }
@@ -86,14 +96,15 @@
   /* ---------- render ---------- */
   const root = () => document.getElementById("app");
   function render(token, opts = {}) {
-    if (state.role === "client" && !opts.keep && !["client", "public", "record", "shared"].includes(parse(token).name)) token = "client";
+    if (state.role === "client" && !opts.keep && !["client", "public", "record", "shared", "onboard"].includes(parse(token).name)) token = "client";
     const { name, params } = parse(token);
     state.token = [name, ...params].join("-");
     const view = CA.views[name];
     const c = ctx(params);
     let inner = "";
     try { inner = view.render(c); } catch (e) { console.error(e); inner = `<div class="banner err">This screen failed to draw: ${U.esc(e.message)}</div>`; }
-    const html = view.frame === false ? inner : frame(view.nav || name, inner);
+    const nav = typeof view.nav === "function" ? view.nav(c) : view.nav;
+    const html = view.frame === false ? inner : frame(nav || name, inner);
     root().innerHTML = demobar() + `<div class="stage">${html}</div>`;
     document.title = "CatchAll · " + (typeof view.title === "function" ? view.title(c) : view.title || "Demo");
     try { history.replaceState(null, "", "#" + state.token); } catch (e) {}

@@ -1,0 +1,121 @@
+/* Decision log, the logging panel (Log a decision / Add why) and the notifications panel. Tokens only. */
+.lg-title{flex-wrap:wrap;gap:8px}
+.lg{min-width:0}
+.lg-h1{font-size:26px;font-weight:700;letter-spacing:-.03em;margin:0;line-height:1.2}
+.lg-title .btn .ico{width:15px;height:15px}
+.lg-needs{flex-wrap:wrap;gap:8px}
+.lg-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px}
+.lg-f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.lg-f label{font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.lg-f .input{font-size:13px;padding:5px 8px}
+.lg-fq{flex:1 1 200px}
+.lg-clear[hidden]{display:none}
+.lg-ghost{background:transparent;color:var(--ink-2);border-color:var(--control-edge)}
+.lg-intro{background:var(--raised);border:1px solid var(--raised-edge);border-radius:10px;padding:16px 18px;margin-bottom:14px}
+.lg-intro p{margin:6px 0 12px;max-width:68ch;color:var(--ink-2)}
+.lg-nh{font-size:18px;font-weight:700;letter-spacing:-.02em;margin:0}
+.lg-none{background:var(--panel);border:1px dashed var(--control-edge);border-radius:8px;padding:22px;text-align:center}
+.lg-none p{margin:4px 0 12px}
+.lg-count{margin:6px 2px 0}
+
+.lg-wrap{max-height:none}
+.lg-table td.lg-wc{min-width:280px}
+.lg-table td.lg-ac{white-space:nowrap}
+.lg-table td.lg-st,.lg-table th.lg-rh{text-align:right;white-space:nowrap}
+.lg-table td.lg-lead{width:44px}
+.lg-how{display:block;font-size:12px;color:var(--muted)}
+.lg-sub{display:block;font:500 11.5px var(--mono);color:var(--muted);margin-top:2px}
+.lg-tier{display:inline-block;font:600 11px var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid var(--rule);border-radius:3px;padding:0 5px;white-space:nowrap;margin-left:2px}
+.lg-tier.unc{color:var(--warn);border-color:currentColor}
+.lg-hollow{width:32px;height:32px;border-radius:5px;border:1.5px dashed var(--control-edge);display:flex;align-items:center;justify-content:center;color:var(--muted)}
+tr.lg-row{cursor:pointer}
+tr.lg-row:focus-visible{outline:2px solid var(--action);outline-offset:-2px}
+tbody tr.lg-outside td{color:var(--muted);background:var(--panel)}
+tbody tr.lg-outside td b{color:var(--ink-2);font-weight:600}
+tbody tr.lg-open td{background:var(--raised);border-bottom:0}
+tr.lg-month td{background:var(--panel)!important;font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:14px 10px 6px;border-bottom:1px solid var(--rule)}
+.lg-show{text-transform:none;letter-spacing:0;font-weight:500;font-size:12px}
+tbody tr.lg-fresh td{animation:lg-fresh 1.6s ease-out}
+@keyframes lg-fresh{from{background:var(--band)}}
+@media (prefers-reduced-motion:reduce){tbody tr.lg-fresh td{animation:none}}
+tbody tr.lg-detail td{background:var(--panel)!important;padding:4px 16px 18px 64px;border-bottom:1.5px solid var(--ink);cursor:default}
+.lg-det{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:0 28px}
+.lg-blk{padding:12px 0;border-top:1px solid var(--rule-soft);min-width:0}
+.lg-blk .lab{font:600 11px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.lg-blk p{margin:2px 0;font-size:13px}
+.lg-wide{grid-column:span 2}
+.lg-mt{margin-top:10px}
+.lg-p{margin-top:10px!important;max-width:70ch;white-space:normal}
+.lg-cmp{display:grid;grid-template-columns:90px 1fr auto;gap:6px 12px;align-items:center;font-size:13px;white-space:normal}
+.lg-blk .meter{margin:10px 0 2px}
+.lg-acts{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.lg-lock{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);border:1px dashed var(--control-edge);border-radius:4px;padding:1px 6px}
+.lg-lock .ico{width:13px;height:13px}
+.lg-score{border-bottom:1px dotted var(--control-edge)}
+@media (max-width:900px){
+  .lg-det{grid-template-columns:1fr}
+  .lg-wide{grid-column:auto}
+  tbody tr.lg-detail td{padding:4px 12px 14px}
+}
+@media (max-width:760px){
+  .lg-filters .lg-f{flex:1 1 140px}
+  .lg-filters .lg-f .input{width:100%}
+  .lg-cmp{grid-template-columns:1fr}
+  tbody tr.lg-detail td{white-space:normal;padding:4px 0 14px}
+  .lg-det{position:sticky;left:0;width:calc(100vw - 100px);padding:0 12px}
+}
+
+/* ---------- the logging panel ---------- */
+.ld{display:flex;flex-direction:column;min-height:100%}
+.ld-from{background:var(--raised);border-radius:6px;padding:8px 10px;font-size:12.5px;margin-bottom:12px}
+.ld-sec{padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--rule-soft)}
+.ld-step{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;margin:4px 0 8px}
+.ld-step i{font:600 11px var(--mono);font-style:normal;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--ink);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.ld-opt{font-weight:400}
+.ld .field{margin-bottom:10px}
+.ld .field .input,.ld-full{width:100%}
+.ld-lab{font-size:12px;font-weight:600;display:block}
+.ld-r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ld-r2 .field{min-width:0}
+.ld-mt{margin-top:8px}
+.ld-snap{font-size:12px;color:var(--muted);margin-top:4px}
+.ld-warn{color:var(--warn);font-weight:600}
+.ld-ro{background:var(--raised);border-radius:6px;padding:10px 12px;font-size:13px}
+.ld-hold{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:8px;padding:7px 10px;border:1px dashed var(--control-edge);border-radius:6px;cursor:pointer}
+.ld-hold input{margin:0;accent-color:var(--ink)}
+.ld-late{background:var(--warn-tint);border-radius:6px;padding:7px 10px;font-size:12.5px;margin-top:6px}
+.ld-late b{color:var(--warn)}
+.ld-fs{border:0;margin:0;padding:0;min-width:0}
+.ld-chips{display:flex;flex-wrap:wrap}
+.ld-chip{user-select:none}
+.ld-chip:focus-within,.ld-seg label:focus-within,.ld-switch:focus-within .ld-sw{outline:2px solid var(--action);outline-offset:2px}
+.ld-seg{display:inline-flex;flex-wrap:wrap;border:1px solid var(--control-edge);border-radius:6px;overflow:hidden;align-self:flex-start;max-width:100%}
+.ld-seg label{padding:5px 11px;font-size:13px;border-right:1px solid var(--rule);cursor:pointer;white-space:nowrap;font-weight:400}
+.ld-seg label:last-child{border-right:0}
+.ld-seg label.on{background:var(--ink);color:var(--ground)}
+.ld-custom{margin-top:6px;font-size:12px}
+.ld-days{width:80px;display:inline-block;padding:4px 8px}
+.ld-confout{font-weight:600;margin-left:6px;color:var(--ink)}
+.ld-switch{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer}
+.ld-sw{display:inline-block;width:30px;height:17px;border-radius:9px;background:var(--control-edge);position:relative;flex:none}
+.ld-sw::after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--panel);transition:left .15s ease-in-out}
+.ld-switch input:checked+.ld-sw{background:var(--ink)}
+.ld-switch input:checked+.ld-sw::after{left:15px}
+@media (prefers-reduced-motion:reduce){.ld-sw::after{transition:none}}
+.ld-note{width:100%;resize:vertical;min-height:60px;font:400 14px var(--sans)}
+.ld-foot{position:sticky;bottom:-16px;background:var(--panel);flex-direction:column;margin:auto -18px -16px;padding:12px 18px 16px;border-top:1px solid var(--rule)}
+.ld-btns{display:flex;justify-content:flex-end;gap:8px}
+
+/* ---------- notifications ---------- */
+.ld-nsum{margin:0 0 6px}
+.ld-nlist{list-style:none;margin:0;padding:0}
+.ld-nitem{display:grid;grid-template-columns:28px 1fr 10px;gap:10px;align-items:start;width:100%;padding:10px 6px;border:0;border-bottom:1px solid var(--rule-soft);background:none;text-align:left;cursor:pointer;color:var(--ink-2);border-radius:4px}
+.ld-nitem:hover{background:var(--raised)}
+.ld-nitem.unread{color:var(--ink)}
+.ld-nitem.unread .ld-nt{font-weight:600}
+.ld-nic{width:28px;height:28px;border-radius:5px;background:var(--raised);display:flex;align-items:center;justify-content:center;color:var(--ink-2)}
+.ld-nic .ico{width:16px;height:16px}
+.ld-nitem.warn .ld-nic{background:var(--warn-tint);color:var(--warn)}
+.ld-nt{display:block;font-size:13.5px}
+.ld-nw{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.ld-dot{width:8px;height:8px;border-radius:50%;background:var(--ink);margin-top:6px}
