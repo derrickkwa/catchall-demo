@@ -56,6 +56,17 @@
   }
   function seasonTag() { return `<span class="season">${D.season.name.split(" ")[0].toUpperCase()} SEASON · <b>${D.season.daysLeft} DAYS LEFT</b></span>`; }
   const H2 = (t, right = "") => `<div class="sech"><h2 class="hm-h">${t}</h2>${right}</div>`;
+  /* collapsible section: closed by default, and whatever the person opens stays open next time */
+  function foldOpen(id, dflt) { try { const v = localStorage.getItem("ca-demo-fold-" + id); return v == null ? dflt : v === "1"; } catch (e) { return dflt; } }
+  function fold(id, title, right, body, opts = {}) {
+    if (!body) return "";
+    const open = foldOpen(id, !!opts.open);
+    return `<details class="fold${opts.tone ? " " + opts.tone : ""}" data-fold="${id}"${open ? " open" : ""}>
+      <summary><span class="fold-t">${U.icon("chev", "ico fold-chev")}${title}</span><span class="fold-r">${right}</span></summary>
+      <div class="fold-b">${body}</div></details>`;
+  }
+  /* main column and the team column side by side from the top of the page */
+  const layout = (main, side) => `<div class="hm-grid"><div class="hm-maincol">${main}</div>${side}</div>`;
 
   function revealBlock(d) {
     const first = !H.revealed[d.id];
@@ -68,7 +79,7 @@
     const edge = `${K.pct(d.move) < 0 ? "−" : "+"}${Math.abs(K.pct(d.band))}%`;
     const verdict = d.status === "hit" ? `${metric} went ${U.num(d.move)}, past the range edge at ${U.num(edge)}${beatAI ? " · you beat the AI" : ""}`
       : d.status === "miss" ? `${metric} went ${U.num(d.move)}, past the edge the other way` : `${metric} moved ${U.num(d.move)}, inside the ${U.num(d.band)} range`;
-    return `<div class="sec" id="hm-new">${H2("New result", `<button class="hm-replay" id="hm-replay" type="button">Replay</button>`)}
+    return `<div class="hm-inner" id="hm-new">${H2("New result", `<button class="hm-replay" id="hm-replay" type="button">Replay</button>`)}
       <div class="reveal hm-reveal">
         ${lead}
         <div>
@@ -87,10 +98,9 @@
     const n = D.me.needsReason;
     const shown = rows.slice(0, 2);
     const how = (d) => `${U.num(d.date)} · ${d.who === "sam" ? "you" : U.esc(P(d.who)?.short || "")} · from change history`;
-    return `<div class="sec needs">${H2(`Needs a reason · ${U.num(n)}`, `<span class="small muted">each one lifts your capture rate</span>`)}
-      ${shown.map((d) => U.row(d, { sub: how(d) })).join("")}
-      ${rows.length > shown.length ? `<button class="linkbtn hm-more" data-go="log">${rows.length - shown.length} more in the decision log →</button>` : ""}
-    </div>`;
+    return fold("needs", `Needs a reason · ${U.num(n)}`, `<span class="small muted">each one lifts your capture rate</span>`,
+      `${shown.map((d) => U.row(d, { sub: how(d) })).join("")}
+      ${rows.length > shown.length ? `<button class="linkbtn hm-more" data-go="log">${rows.length - shown.length} more in the decision log →</button>` : ""}`, { tone: "needs" });
   }
 
   function gradedBlock(who) {
@@ -101,8 +111,8 @@
       const inside = d.status === "noise";
       return `said ${U.esc(d.pred)} at ${U.conf(d.conf)} · ${inside ? "moved" : "went"} ${U.num(d.move)}, ${inside ? `inside the ${U.num(d.band)} range` : `past the edge at ${U.num(d.band)}`}${d.aiResult ? ` · AI: ${ai[d.aiResult]}` : ""}`;
     };
-    return `<div class="sec">${H2(`Also graded since you were last here · ${U.num(rows.length)}`, `<button class="linkbtn u small" data-go="calls">My calls →</button>`)}
-      ${rows.map((d) => U.row(d, { sub: sub(d) })).join("")}</div>`;
+    return fold("graded", `Also graded since you were last here · ${U.num(rows.length)}`, `<button class="linkbtn u small" data-go="calls">My calls →</button>`,
+      rows.map((d) => U.row(d, { sub: sub(d) })).join(""));
   }
 
   function comingRow(d) {
@@ -114,9 +124,9 @@
   function comingBlock(who, total, rows, next) {
     if (!rows.length) return "";
     const shown = rows.slice(0, 3);
-    return `<div class="sec">${H2(`Coming up · ${U.num(total)} waiting`, `<span class="small muted">${next}</span>`)}
-      ${shown.map(comingRow).join("")}
-      ${total > shown.length ? `<button class="linkbtn hm-more" data-go="calls">${total - shown.length} more in My calls →</button>` : ""}</div>`;
+    return fold("coming", `Coming up · ${U.num(total)} waiting`, `<span class="small muted">${next}</span>`,
+      `${shown.map(comingRow).join("")}
+      ${total > shown.length ? `<button class="linkbtn hm-more" data-go="calls">${total - shown.length} more in My calls →</button>` : ""}`);
   }
 
   function miniBoard(c, opts = {}) {
@@ -163,15 +173,14 @@
     const needs = needsBlock(c), graded = gradedBlock("sam");
     const quiet = !nd && !needs && !graded
       ? `<div class="hm-quiet"><h2 class="hm-qh">Nothing new since yesterday at 17:40</h2><p>No results landed and every change on your accounts has a reason. Nothing needs you today.</p></div>` : "";
-    return `<div class="hm">
-      <section class="score" aria-label="Your season">
+    return `<div class="hm">${layout(`
+      <section class="score hm-hero" aria-label="Your season">
         <div class="top"><h1 class="hm-greet">Good morning, Sam</h1>${seasonTag()}</div>
         ${scoreTiles(me)}${h2h(me)}
+        ${nd ? revealBlock(nd) : ""}
       </section>
-      <div class="cols"><div>
-        ${nd ? revealBlock(nd) : ""}${quiet}${needs}${graded}
-        ${comingBlock("sam", me.waiting + extra, mine.slice().reverse().sort((a, b) => (b._new ? 1 : 0) - (a._new ? 1 : 0)), `next result <b>Monday, Oct 27</b>`)}
-      </div>${rail(c)}</div></div>`;
+      ${quiet}${needs}${graded}
+      ${comingBlock("sam", me.waiting + extra, mine.slice().reverse().sort((a, b) => (b._new ? 1 : 0) - (a._new ? 1 : 0)), `next result <b>Monday, Oct 27</b>`)}`, rail(c))}</div>`;
   }
 
   function buyerDay1(c) {
@@ -179,8 +188,8 @@
     const done = 1 + (fb ? 1 : 0);
     const boxes = Array.from({ length: 20 }, (_, i) => `<i class="${i < 3 ? "f" : ""}"></i>`).join("");
     const ck = (isDone, title, sub, action) => `<div class="ck${isDone ? " done" : ""}"><span class="box" aria-hidden="true">${isDone ? U.icon("check") : ""}</span><div><div class="w"><b>${title}</b></div><div class="s">${sub}</div></div>${isDone ? `<span class="small muted">Done</span>` : action}</div>`;
-    return `<div class="hm">
-      <section class="score" aria-label="Your first season">
+    return `<div class="hm">${layout(`
+      <section class="score hm-hero" aria-label="Your first season">
         <div class="top"><h1 class="hm-greet">Welcome, Sam</h1>${seasonTag()}</div>
         <div class="tiles">
           ${U.tile(`${U.icon("target")}First result`, "Oct 28", `Budget cut on Acme Skincare, in ${U.num(5)} days`)}
@@ -190,17 +199,14 @@
         </div>
         <div class="small muted" style="margin-top:10px">Your numbers and the head to head with the AI start when your first call is graded.</div>
       </section>
-      <div class="cols"><div>
-        <div class="hm-panelx">${H2(`Get set up · ${done} of 3 done`, `<span class="small muted">stays here until it's done</span>`)}
+        ${fold("setup", `Get set up · ${done} of 3 done`, `<span class="small muted">stays here until it's done</span>`, `
           ${ck(fb, "Link your Facebook", fb ? "Done today. Changes you make in Ads Manager now count as yours." : "So changes you make in Ads Manager count as yours, with or without the plugin. Asks for no ad account access.", `<button class="btn btn-primary btn-sm" id="hm-linkfb">Link your Facebook</button>`)}
           ${ck(true, "Install the plugin", "Done Oct 21. Log calls as you publish in Ads Manager.")}
-          ${ck(false, "214 past changes need a reason", "From the last 12 months on your accounts. Each one you explain lifts your capture rate.", `<button class="btn btn-secondary btn-sm" data-go="log">Add why</button>`)}
-        </div>
+          ${ck(false, "214 past changes need a reason", "From the last 12 months on your accounts. Each one you explain lifts your capture rate.", `<button class="btn btn-secondary btn-sm" data-go="log">Add why</button>`)}`, { open: true })}
         ${comingBlock("sam", 3, H.day1Coming, `first result <b>Tuesday, Oct 28</b>`)}
-        <div class="sec">${H2("Free audit", `<button class="linkbtn u small" data-go="acct-acme-performance">Open →</button>`)}
-          <div class="li" style="border-bottom:0"><span class="ctype">${U.icon("check")}</span><div><div class="w"><b>What 214 past changes did</b> on Acme Skincare, plus health and market research</div><div class="s">${U.acctTag("acme")} · ready since Oct 21</div></div><div class="rowend"><button class="btn btn-secondary btn-sm" data-go="acct-acme-performance">Open audit</button></div></div>
-        </div>
-      </div>${rail(c, { day1: true })}</div></div>`;
+        ${fold("audit", "Free audit", `<button class="linkbtn u small" data-go="acct-acme-performance">Open →</button>`, `
+          <div class="li" style="border-bottom:0"><span class="ctype">${U.icon("check")}</span><div><div class="w"><b>What 214 past changes did</b> on Acme Skincare, plus health and market research</div><div class="s">${U.acctTag("acme")} · ready since Oct 21</div></div><div class="rowend"><button class="btn btn-secondary btn-sm" data-go="acct-acme-performance">Open audit</button></div></div>`, { open: true })}
+      `, rail(c, { day1: true }))}</div>`;
   }
 
   /* Dana's own calls ("Just me") */
@@ -243,9 +249,9 @@
         <td class="hm-tend">${r.notLinked ? `<button class="btn btn-secondary btn-sm" data-toast="Reminder sent to ${U.esc(p.short)}: link your Facebook so your changes count as yours">Remind ${U.esc(p.short)}</button>` : r.below ? `<span class="small muted">below ${U.num("50%")} to qualify</span>` : ""}</td></tr>`;
     };
     const worth = H.worth.filter((w) => !w.dismissed);
-    return `<div class="hm">
+    return `<div class="hm">${layout(`
       <div class="titlebar hm-title"><h1 class="hm-greet">Good morning, Dana<small>${U.esc(D.workspace.name.toUpperCase())} · THIS WEEK</small></h1>${toggle()}</div>
-      <section class="score" aria-label="Your team this season">
+      <section class="score hm-hero" aria-label="Your team this season">
         <div class="top"><h2 class="hm-h" style="font-size:18px">Your team this season</h2>${seasonTag()}</div>
         <div class="tiles">
           ${U.tile(`${U.icon("check")}Hit rate`, `${T.hitRate}%`, `team · ${U.num(T.graded)} graded · <span class="up">${T.hitMove}</span>`)}
@@ -254,25 +260,21 @@
           ${U.tile(`${U.icon("alert")}Outside normal range`, `${T.outside}<span class="hm-of"> / ${D.accountCount}</span>`, "Acme, Bloom, Kettle &amp; Co")}
         </div>
       </section>
-      <div class="cols"><div>
-        ${needs.length ? `<div class="sec needs">${H2(`Needs you · ${U.num(needs.length)}`, `<span class="small muted">also sent by email</span>`)}
-          ${needs.map((n) => `<div class="li">${lead(n)}<div><div class="w">${n.title} ${n.acct ? U.acctTag(n.acct) : ""}</div><div class="s">${n.sub}</div></div><div class="rowend"><button class="btn btn-primary btn-sm" data-go="${n.go}">${n.btn}</button></div></div>`).join("")}</div>` : ""}
-        <div class="sec">${H2(`Accounts outside their normal range · ${U.num(H.outside.length)}`, `<button class="linkbtn u small" data-toast="The full list has all ${D.accountCount} of Harbor Media's accounts">All accounts →</button>`)}
+        ${needs.length ? fold("ownerneeds", `Needs you · ${U.num(needs.length)}`, `<span class="small muted">also sent by email</span>`,
+          needs.map((n) => `<div class="li">${lead(n)}<div><div class="w">${n.title} ${n.acct ? U.acctTag(n.acct) : ""}</div><div class="s">${n.sub}</div></div><div class="rowend"><button class="btn btn-primary btn-sm" data-go="${n.go}">${n.btn}</button></div></div>`).join(""), { tone: "needs" }) : ""}
+        ${fold("outside", `Accounts outside their normal range · ${U.num(H.outside.length)}`, `<button class="linkbtn u small" data-toast="The full list has all ${D.accountCount} of Harbor Media's accounts">All accounts →</button>`, `
           ${H.outside.map((o) => `<div class="li hm-out">${U.acctTag(o.acct)}<div><div class="w">${o.head}</div><div class="s">${o.sub} · <button class="linkbtn u" data-go="acct-${o.acct}-performance">See on chart →</button></div></div><div class="rng" aria-hidden="true"><div class="t"></div><div class="b" style="left:${o.band[0]}%;width:${o.band[1]}%"></div><div class="p" style="left:${o.pin}%"></div></div></div>`).join("")}
-          <div class="small muted" style="padding-top:6px">The bar is the account's own normal range; the mark is today. Each account opens its Performance chart with the changes before it.</div>
-        </div>
-        <div class="sec">${H2("Team", `<button class="linkbtn u small" data-go="team">Team page →</button>`)}
+          <div class="small muted" style="padding-top:6px">The bar is the account's own normal range; the mark is today. Each account opens its Performance chart with the changes before it.</div>`)}
+        ${fold("teamtable", "Team", `<button class="linkbtn u small" data-go="team">Team page →</button>`, `
           <div class="tablewrap hm-table" style="margin-top:8px"><table>
             <thead><tr><th scope="col">Buyer</th><th scope="col" class="r">Capture</th><th scope="col" class="r">Hit rate</th><th scope="col" class="r">Graded</th><th scope="col" class="r">No reason</th><th scope="col"><span class="sr">Action</span></th></tr></thead>
             <tbody>${H.team.table.map(tr).join("")}</tbody></table></div>
-          <div class="small muted" style="padding-top:6px">Not linked: Alex hasn't done Link your Facebook, so changes Alex makes in Ads Manager show as "someone not linked" and can't be credited or counted in capture.</div>
-        </div>
-        <div class="sec">${H2(`Worth considering this week · ${U.num(worth.length)}`, `<span class="small muted">only things that cleared the noise</span>`)}
+          <div class="small muted" style="padding-top:6px">Not linked: Alex hasn't done Link your Facebook, so changes Alex makes in Ads Manager show as "someone not linked" and can't be credited or counted in capture.</div>`)}
+        ${fold("worth", `Worth considering this week · ${U.num(worth.length)}`, `<span class="small muted">only things that cleared the noise</span>`, `
           ${worth.length ? worth.map((w) => `<div class="li">${w.thumb != null ? U.thumb(w.thumb) : U.ctype(w.type)}<div><div class="w">${w.title} ${U.acctTag(w.acct)}</div><div class="s">${U.esc(w.camp)} · from this week's report</div></div>
             <div class="rowend hm-acts"><button class="btn btn-secondary btn-sm" data-drawer="log" data-acct="${w.acct}" data-camp="${U.esc(w.camp)}" data-reason="${U.esc(w.reason)}" data-signal="${U.esc(w.signal)}" data-metric="${w.metric}" data-field="${w.field}" data-from="${w.id}">Doing this</button><button class="btn btn-sm hm-ghost" data-notnow="${w.id}">Not now</button></div></div>`).join("")
-            : `<p class="muted small" style="margin:10px 0">Nothing else this week. Next week's report lands Monday.</p>`}
-        </div>
-      </div>${rail(c)}</div></div>`;
+            : `<p class="muted small" style="margin:10px 0">Nothing else this week. Next week's report lands Monday.</p>`}`)}
+      `, rail(c))}</div>`;
   }
 
   const AUDIT = { month: 7, timer: null };
@@ -324,6 +326,9 @@
     },
     mount(root, c) {
       const main = root.querySelector("#main") || root;
+      main.querySelectorAll("details[data-fold]").forEach((d) => d.addEventListener("toggle", () => {
+        try { localStorage.setItem("ca-demo-fold-" + d.dataset.fold, d.open ? "1" : "0"); } catch (e) {}
+      }));
       main.addEventListener("click", (e) => {
         const m = e.target.closest("[data-hmode]");
         if (m) { CA.state.homeMode = m.dataset.hmode; CA.rerender(); return; }
