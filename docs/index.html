@@ -754,8 +754,10 @@ td.b-pos{width:48px;padding-top:5px;padding-bottom:5px}
 .hm-grid>.rail{min-width:0}
 .hm-grid>.rail .box:first-child{margin-top:0}
 .hm .hm-hero{margin:0}
-.hm-inner{margin-top:16px;background:color-mix(in srgb,var(--panel) 55%,var(--raised));border:1px solid var(--raised-edge);border-radius:8px;padding:12px 14px}
-.hm-inner .hm-reveal{background:var(--panel)}
+/* the newest result sits in the same box as the season numbers, set off by a divider, not a nested panel */
+.hm-inner{margin-top:16px;padding-top:12px;border-top:1px solid var(--raised-edge)}
+.hm-inner .sech{border-bottom:0;padding-bottom:0}
+.hm-inner .hm-reveal{background:var(--panel);margin-top:8px}
 @media(max-width:1100px){.hm-grid{grid-template-columns:1fr}}
 
 details.fold{border-bottom:1.5px solid var(--ink)}
@@ -3432,7 +3434,7 @@ CA.data.outside = {
     const how = (d) => `${U.num(d.date)} · ${d.who === "sam" ? "you" : U.esc(P(d.who)?.short || "")} · from change history`;
     return fold("needs", `Needs a reason · ${U.num(n)}`, `<span class="small muted">each one lifts your capture rate</span>`,
       `${shown.map((d) => U.row(d, { sub: how(d) })).join("")}
-      ${rows.length > shown.length ? `<button class="linkbtn hm-more" data-go="log">${rows.length - shown.length} more in the decision log →</button>` : ""}`, { tone: "needs" });
+      ${rows.length > shown.length ? `<button class="linkbtn hm-more" data-go="log">${rows.length - shown.length} more in the decision log →</button>` : ""}`, { tone: "needs", open: true });
   }
 
   function gradedBlock(who) {
@@ -3593,7 +3595,7 @@ CA.data.outside = {
         </div>
       </section>
         ${needs.length ? fold("ownerneeds", `Needs you · ${U.num(needs.length)}`, `<span class="small muted">also sent by email</span>`,
-          needs.map((n) => `<div class="li">${lead(n)}<div><div class="w">${n.title} ${n.acct ? U.acctTag(n.acct) : ""}</div><div class="s">${n.sub}</div></div><div class="rowend"><button class="btn btn-primary btn-sm" data-go="${n.go}">${n.btn}</button></div></div>`).join(""), { tone: "needs" }) : ""}
+          needs.map((n) => `<div class="li">${lead(n)}<div><div class="w">${n.title} ${n.acct ? U.acctTag(n.acct) : ""}</div><div class="s">${n.sub}</div></div><div class="rowend"><button class="btn btn-primary btn-sm" data-go="${n.go}">${n.btn}</button></div></div>`).join(""), { tone: "needs", open: true }) : ""}
         ${fold("outside", `Accounts outside their normal range · ${U.num(H.outside.length)}`, `<button class="linkbtn u small" data-toast="The full list has all ${D.accountCount} of Harbor Media's accounts">All accounts →</button>`, `
           ${H.outside.map((o) => `<div class="li hm-out">${U.acctTag(o.acct)}<div><div class="w">${o.head}</div><div class="s">${o.sub} · <button class="linkbtn u" data-go="acct-${o.acct}-performance">See on chart →</button></div></div><div class="rng" aria-hidden="true"><div class="t"></div><div class="b" style="left:${o.band[0]}%;width:${o.band[1]}%"></div><div class="p" style="left:${o.pin}%"></div></div></div>`).join("")}
           <div class="small muted" style="padding-top:6px">The bar is the account's own normal range; the mark is today. Each account opens its Performance chart with the changes before it.</div>`)}

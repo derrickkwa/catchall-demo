@@ -117,8 +117,10 @@
 .hm-grid>.rail{min-width:0}
 .hm-grid>.rail .box:first-child{margin-top:0}
 .hm .hm-hero{margin:0}
-.hm-inner{margin-top:16px;background:color-mix(in srgb,var(--panel) 55%,var(--raised));border:1px solid var(--raised-edge);border-radius:8px;padding:12px 14px}
-.hm-inner .hm-reveal{background:var(--panel)}
+/* the newest result sits in the same box as the season numbers, set off by a divider, not a nested panel */
+.hm-inner{margin-top:16px;padding-top:12px;border-top:1px solid var(--raised-edge)}
+.hm-inner .sech{border-bottom:0;padding-bottom:0}
+.hm-inner .hm-reveal{background:var(--panel);margin-top:8px}
 @media(max-width:1100px){.hm-grid{grid-template-columns:1fr}}
 
 details.fold{border-bottom:1.5px solid var(--ink)}

@@ -100,7 +100,7 @@
     const how = (d) => `${U.num(d.date)} · ${d.who === "sam" ? "you" : U.esc(P(d.who)?.short || "")} · from change history`;
     return fold("needs", `Needs a reason · ${U.num(n)}`, `<span class="small muted">each one lifts your capture rate</span>`,
       `${shown.map((d) => U.row(d, { sub: how(d) })).join("")}
-      ${rows.length > shown.length ? `<button class="linkbtn hm-more" data-go="log">${rows.length - shown.length} more in the decision log →</button>` : ""}`, { tone: "needs" });
+      ${rows.length > shown.length ? `<button class="linkbtn hm-more" data-go="log">${rows.length - shown.length} more in the decision log →</button>` : ""}`, { tone: "needs", open: true });
   }
 
   function gradedBlock(who) {
@@ -261,7 +261,7 @@
         </div>
       </section>
         ${needs.length ? fold("ownerneeds", `Needs you · ${U.num(needs.length)}`, `<span class="small muted">also sent by email</span>`,
-          needs.map((n) => `<div class="li">${lead(n)}<div><div class="w">${n.title} ${n.acct ? U.acctTag(n.acct) : ""}</div><div class="s">${n.sub}</div></div><div class="rowend"><button class="btn btn-primary btn-sm" data-go="${n.go}">${n.btn}</button></div></div>`).join(""), { tone: "needs" }) : ""}
+          needs.map((n) => `<div class="li">${lead(n)}<div><div class="w">${n.title} ${n.acct ? U.acctTag(n.acct) : ""}</div><div class="s">${n.sub}</div></div><div class="rowend"><button class="btn btn-primary btn-sm" data-go="${n.go}">${n.btn}</button></div></div>`).join(""), { tone: "needs", open: true }) : ""}
         ${fold("outside", `Accounts outside their normal range · ${U.num(H.outside.length)}`, `<button class="linkbtn u small" data-toast="The full list has all ${D.accountCount} of Harbor Media's accounts">All accounts →</button>`, `
           ${H.outside.map((o) => `<div class="li hm-out">${U.acctTag(o.acct)}<div><div class="w">${o.head}</div><div class="s">${o.sub} · <button class="linkbtn u" data-go="acct-${o.acct}-performance">See on chart →</button></div></div><div class="rng" aria-hidden="true"><div class="t"></div><div class="b" style="left:${o.band[0]}%;width:${o.band[1]}%"></div><div class="p" style="left:${o.pin}%"></div></div></div>`).join("")}
           <div class="small muted" style="padding-top:6px">The bar is the account's own normal range; the mark is today. Each account opens its Performance chart with the changes before it.</div>`)}
